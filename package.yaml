@@ -14,7 +14,9 @@ dependencies:
 - base >=4.7 && <5
 - servant
 - servant-server
+- transformers
 - aeson
+- postgresql-simple
 
 library:
   source-dirs: src
