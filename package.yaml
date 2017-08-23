@@ -1,0 +1,58 @@
+name: haskell-blog
+version: '0.1.0.0'
+category: Web
+author: McKay Broderick
+maintainer: mckay.db@gmail.com
+copyright: '2017'
+license: BSD3
+github: mckayb/haskell-blog
+
+extra-source-files:
+- README.md
+
+dependencies:
+- base >=4.7 && <5
+- servant
+- servant-server
+- aeson
+
+library:
+  source-dirs: src
+  ghc-options:
+  - -Wall
+  - -Wincomplete-uni-patterns
+  - -Wincomplete-record-updates
+  - -Wmissing-import-lists
+  dependencies:
+  - warp
+
+executables:
+  haskell-blog-exe:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    - -Wincomplete-uni-patterns
+    - -Wincomplete-record-updates
+    - -Wmissing-import-lists
+    dependencies:
+    - haskell-blog
+
+tests:
+  haskell-blog-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    - -Wincomplete-uni-patterns
+    - -Wincomplete-record-updates
+    - -Wmissing-import-lists
+    dependencies:
+    - hspec
+    - haskell-blog
