@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Blog.API.Server where
+module Blog.Server where
 
 import Prelude (Int)
 import Control.Monad.IO.Class (liftIO)
