@@ -16,6 +16,7 @@ dependencies:
 - servant-server
 - transformers
 - aeson
+- time
 - postgresql-simple
 
 library:

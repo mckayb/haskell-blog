@@ -1,4 +1,4 @@
-module API.BlogSpec where
+module Blog.API.ServerSpec where
 
 import Prelude (IO, (+), ($))
 import Test.Hspec (Spec, hspec, describe, context, it, shouldBe)

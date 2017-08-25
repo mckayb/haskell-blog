@@ -2,7 +2,7 @@ module Lib
     ( start
     ) where
 
-import API.Blog (app)
+import Blog.API.Server (app)
 import Network.Wai.Handler.Warp (run)
 
 start :: IO ()
