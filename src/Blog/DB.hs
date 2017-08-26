@@ -1,4 +1,4 @@
-module Blog.DB where
+module Blog.DB (safeGetConn) where
 
 import Prelude (IO, Either)
 import Database.PostgreSQL.Simple ( Connection
@@ -9,9 +9,8 @@ import Database.PostgreSQL.Simple ( Connection
                                                )
                                   , defaultConnectInfo
                                   , connect
-                                  , SqlError
                                   )
-import Control.Exception (try, Exception, SomeException)
+import Control.Exception (try, SomeException)
 
 opts :: ConnectInfo
 opts = defaultConnectInfo
@@ -21,8 +20,5 @@ opts = defaultConnectInfo
     , connectDatabase = "homestead"
     }
 
-getConn :: IO Connection
-getConn = connect opts
-
-safeGetConn :: ConnectInfo -> IO (Either SomeException Connection)
-safeGetConn opts = try (connect opts)
+safeGetConn :: IO (Either SomeException Connection)
+safeGetConn = try (connect opts)

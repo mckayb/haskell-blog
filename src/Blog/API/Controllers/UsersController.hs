@@ -2,38 +2,33 @@
 
 module Blog.API.Controllers.UsersController where
 
-import Prelude (IO, Int, Either(Left, Right), return, fmap, ($), (>>=))
-import Control.Exception (Exception, SomeException, try)
+import Prelude (IO, Int, Either(Left, Right), Maybe(Just, Nothing), return, ($))
+import Control.Exception (SomeException, try)
 import Blog.API.Models.User (User)
-import Blog.DB (opts, getConn, safeGetConn)
-import Database.PostgreSQL.Simple ( Only(Only)
-                                  , query
-                                  , query_
-                                  , connect
-                                  )
+import Blog.DB (safeGetConn)
+import Database.PostgreSQL.Simple (Only(Only), query, query_, close)
 
-index :: IO [User]
-index = do
-    conn <- connect opts
-    query_ conn "select name, email, password from users"
+indexUsers :: IO [User]
+indexUsers = do
+    eitherConn <- safeGetConn
+    case eitherConn of
+        Left _ -> return []
+        Right conn -> do
+            eitherUsers <- try $ query_ conn "select name, email, password from users" :: IO (Either SomeException [User])
+            close conn
+            case eitherUsers of
+                Left _ -> return []
+                Right users -> return users
 
-show :: Int -> IO User
-show id = do
-    conn <- connect opts
-    [u] <- query conn "select name, email, password from users where id = ?" $ Only id
-    return u
-
-indexSafe :: IO [User]
-indexSafe = do
-    conn <- safeGetConn opts
-    case conn of
-        Left e -> return []
-        Right connection -> 
-            let
-                connResults :: IO (Either SomeException [User])
-                connResults = try $ query_ connection "select name, email, password from users"
-            in do
-                eitherUsers <- connResults
-                case eitherUsers of
-                    Left e -> return []
-                    Right u -> return u
+showUser :: Int -> IO (Maybe User)
+showUser id = do
+    eitherConn <- safeGetConn
+    case eitherConn of
+        Left _ -> return Nothing
+        Right conn -> do
+            eitherUser <- (try $ query conn "select name, email, password from users where id = ?" $ Only id) :: IO (Either SomeException [User])
+            close conn
+            case eitherUser of
+                Left _ -> return Nothing
+                Right [u] -> return (Just u)
+                Right _ -> return Nothing

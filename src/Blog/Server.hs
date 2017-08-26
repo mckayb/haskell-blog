@@ -1,9 +1,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Blog.Server where
 
-import Prelude (Int)
+import Prelude (Int, Maybe(Just, Nothing), return)
 import Control.Monad.IO.Class (liftIO)
 import Servant ( Application
                , Server
@@ -12,30 +13,32 @@ import Servant ( Application
                , Capture
                , Get
                , JSON
+               , ServantErr(errBody)
                , serve
+               , throwError
+               , err404
                , (:>)
                , (:<|>)((:<|>))
                )
 import Blog.API.Models.User (User)
-import qualified Blog.API.Controllers.UsersController as UsersController (index, indexSafe, show)
+import qualified Blog.API.Controllers.UsersController as UsersController (indexUsers, showUser)
 
 type BlogAPI = "users" :> Get '[JSON] [User]
   :<|> "users" :> Capture "id" Int :> Get '[JSON] User
-  :<|> "safe_users" :> Get '[JSON] [User]
 
 blogServer :: Server BlogAPI
-blogServer = indexUsers
-  :<|> showUser
-  :<|> safeIndexUsers
+blogServer = all
+  :<|> single
     where
-      indexUsers :: Handler [User]
-      indexUsers = liftIO UsersController.index
+      all :: Handler [User]
+      all = liftIO UsersController.indexUsers
 
-      showUser :: Int -> Handler User
-      showUser id = liftIO (UsersController.show id)
-
-      safeIndexUsers :: Handler [User]
-      safeIndexUsers = liftIO UsersController.indexSafe
+      single :: Int -> Handler User
+      single id = do
+        mu <- liftIO (UsersController.showUser id)
+        case mu of
+          Just u -> return u
+          Nothing -> throwError (err404 { errBody = "Not found!" })
 
 blogAPI :: Proxy BlogAPI
 blogAPI = Proxy
