@@ -3,7 +3,10 @@ module Lib
     ) where
 
 import Blog.Server (app)
+import Blog.Config (load)
 import Network.Wai.Handler.Warp (run)
 
 start :: IO ()
-start = run 8081 app
+start = do
+    load ".env"
+    run 8081 app
