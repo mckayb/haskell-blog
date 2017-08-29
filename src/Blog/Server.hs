@@ -21,21 +21,21 @@ import Servant ( Application
                , (:<|>)((:<|>))
                )
 import Blog.API.Models.User (User)
-import qualified Blog.API.Controllers.UsersController as UsersController (indexUsers, showUser)
+import qualified Blog.API.Controllers.UsersController as UsersController (index, show)
 
 type BlogAPI = "users" :> Get '[JSON] [User]
   :<|> "users" :> Capture "id" Int :> Get '[JSON] User
 
 blogServer :: Server BlogAPI
-blogServer = all
-  :<|> single
+blogServer = indexUsers
+  :<|> showUser
     where
-      all :: Handler [User]
-      all = liftIO UsersController.indexUsers
+      indexUsers :: Handler [User]
+      indexUsers = liftIO UsersController.index
 
-      single :: Int -> Handler User
-      single id = do
-        mu <- liftIO (UsersController.showUser id)
+      showUser :: Int -> Handler User
+      showUser id = do
+        mu <- liftIO (UsersController.show id)
         case mu of
           Just u -> return u
           Nothing -> throwError (err404 { errBody = "Not found!" })

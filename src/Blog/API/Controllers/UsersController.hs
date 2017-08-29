@@ -8,8 +8,8 @@ import Blog.API.Models.User (User)
 import Blog.DB (safeGetConn)
 import Database.PostgreSQL.Simple (Only(Only), query, query_, close)
 
-indexUsers :: IO [User]
-indexUsers = do
+index :: IO [User]
+index = do
     eitherConn <- safeGetConn
     case eitherConn of
         Left _ -> return []
@@ -20,8 +20,8 @@ indexUsers = do
                 Left _ -> return []
                 Right users -> return users
 
-showUser :: Int -> IO (Maybe User)
-showUser id = do
+show :: Int -> IO (Maybe User)
+show id = do
     eitherConn <- safeGetConn
     case eitherConn of
         Left _ -> return Nothing
