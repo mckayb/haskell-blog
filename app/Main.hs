@@ -1,7 +1,7 @@
 module Main where
 
 import Prelude (IO, putStrLn)
-import Lib (start)
+import Blog (start)
 
 main :: IO ()
 main = do
