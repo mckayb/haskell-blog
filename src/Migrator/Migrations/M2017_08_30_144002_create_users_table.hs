@@ -1,22 +1,28 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Migrator.Migrations.M2017_08_30_144002_create_users_table (up, down) where
-import Database.PostgreSQL.Simple (Connection)
+
+import Database.PostgreSQL.Simple (Connection, Only(Only), query_, close)
+import Control.Exception (try)
 import Prelude (IO, Maybe(Just, Nothing), putStrLn)
 
 up :: Connection -> IO ()
 up conn = do
   putStrLn "Migrating M2017_08_30_133002_create_users_table..."
-  putStrLn "Going up!"
+  query_ conn
+    "create table public.users (\
+      \id serial primary key\
+      \name VARCHAR(255) not null\
+      \email VARCHAR(255) not null\
+      \password VARCHAR(255) not null\
+    \)"
   putStrLn "Migrated M2017_08_30_133002_create_users_table."
 
 down :: Connection -> IO ()
 down conn = do
   putStrLn "Rolling Back M2017_08_30_133002_create_users_table..."
-  putStrLn "Going down!"
+  query_ conn "drop table public.users"
   putStrLn "Rolled back M2017_08_30_133002_create_users_table."
-
-
 
 -- migrate :: IO ()
 -- migrate = putStrLn "Testing"
