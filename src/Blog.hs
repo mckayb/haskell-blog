@@ -2,11 +2,12 @@ module Blog
     ( start
     ) where
 
+import Prelude (IO, Bool(False))
 import Blog.Server (app)
-import Blog.Config (load)
 import Network.Wai.Handler.Warp (run)
+import qualified Configuration.Dotenv as Dotenv (loadFile)
 
 start :: IO ()
 start = do
-    load ".env"
+    Dotenv.loadFile False ".env"
     run 8081 app
