@@ -4,43 +4,43 @@ module Blog.API.Controllers.UsersController where
 
 import Prelude (IO, Bool(True, False), Int, Either(Left, Right), Maybe(Just, Nothing), return, ($))
 import Control.Exception (SomeException, try)
-import Blog.API.Models.User (PublicUser, NewUser(newName, newEmail, newPassword))
+import Blog.API.Models.User (User(User), NewUser(newName, newEmail, newPassword), UpdateUser, ResponseUser)
 import Blog.DB (safeGetConn)
 import Database.PostgreSQL.Simple (Only(Only), query, query_, returning, execute, close)
 import Data.Int (Int64)
 
-index :: IO [PublicUser]
+index :: IO [User ResponseUser]
 index = do
     eitherConn <- safeGetConn
     case eitherConn of
         Left _ -> return []
         Right conn -> do
-            eitherUsers <- try $ query_ conn "select id, name, email from users" :: IO (Either SomeException [PublicUser])
+            eitherUsers <- try $ query_ conn "select id, name, email from users" :: IO (Either SomeException [User ResponseUser])
             close conn
             case eitherUsers of
                 Left _ -> return []
                 Right users -> return users
 
-show :: Int -> IO (Maybe PublicUser)
+show :: Int -> IO (Maybe (User ResponseUser))
 show id = do
     eitherConn <- safeGetConn
     case eitherConn of
         Left _ -> return Nothing
         Right conn -> do
-            eitherUser <- (try $ query conn "select name, email from users where id = ?" $ Only id) :: IO (Either SomeException [PublicUser])
+            eitherUser <- (try $ query conn "select id, name, email from users where id = ?" $ Only id) :: IO (Either SomeException [User ResponseUser])
             close conn
             case eitherUser of
                 Left _ -> return Nothing
                 Right [u] -> return (Just u)
                 Right _ -> return Nothing
 
-store :: NewUser -> IO (Maybe PublicUser)
-store user = do
+store :: User NewUser -> IO (Maybe (User ResponseUser))
+store (User user) = do
     eitherConn <- safeGetConn
     case eitherConn of
         Left _ -> return Nothing
         Right conn -> do
-            eitherUser <- (try $ returning conn "insert into users (name, email, password) VALUES (?, ?, ?) returning id, name, email" [(newName user, newEmail user, newPassword user)]) :: IO (Either SomeException [PublicUser])
+            eitherUser <- (try $ returning conn "insert into users (name, email, password) VALUES (?, ?, ?) returning id, name, email" [(newName user, newEmail user, newPassword user)]) :: IO (Either SomeException [User ResponseUser])
             close conn
             case eitherUser of
                 Left _ -> return Nothing
