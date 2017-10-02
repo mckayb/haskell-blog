@@ -17,6 +17,7 @@ dependencies:
 - transformers
 - aeson
 - time
+- text
 - postgresql-simple
 
 library:

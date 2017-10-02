@@ -4,7 +4,7 @@
 
 module Blog.Server where
 
-import Prelude (Int, Maybe(Just, Nothing), return)
+import Prelude (Int, Maybe(Just, Nothing), fmap, return)
 import Control.Monad.IO.Class (liftIO)
 import Servant ( Application
                , Server
@@ -14,6 +14,7 @@ import Servant ( Application
                , Get
                , Post
                , Delete
+               , Put
                , JSON
                , ServantErr(errBody)
                , ReqBody
@@ -25,13 +26,14 @@ import Servant ( Application
                , (:>)
                , (:<|>)((:<|>))
                )
-import Blog.API.Models.User (PublicUser, NewUser)
+import Blog.API.Models.User (User(User), DBUser, NewUser, UpdateUser)
 import qualified Blog.API.Controllers.UsersController as UsersController (index, show, store, destroy)
 
-type BlogAPI = "users" :> Get '[JSON] [PublicUser]
-  :<|> "users" :> Capture "id" Int :> Get '[JSON] PublicUser
-  :<|> "users" :> ReqBody '[JSON] NewUser :> Post '[JSON] PublicUser
-  -- :<|> "users" :> Capture "id" Int :> ReqBody '[JSON] NewUser :> Put '[JSON] PublicUser
+type BlogAPI =
+       "users" :> Get '[JSON] [User DBUser]
+  :<|> "users" :> Capture "id" Int :> Get '[JSON] (User DBUser)
+  :<|> "users" :> ReqBody '[JSON] (User NewUser) :> Post '[JSON] (User DBUser)
+  -- :<|> "users" :> Capture "id" Int :> ReqBody '[JSON] (User UpdateUser) :> Put '[JSON] (User DBUser)
   :<|> "users" :> Capture "id" Int :> Delete '[JSON] NoContent
 
 blogServer :: Server BlogAPI
@@ -41,24 +43,26 @@ blogServer = indexUsers
   -- :<|> updateUser
   :<|> deleteUser
     where
-      indexUsers :: Handler [PublicUser]
-      indexUsers = liftIO UsersController.index
+      indexUsers :: Handler [User DBUser]
+      indexUsers = do
+        users <- liftIO UsersController.index
+        return (fmap User users)
 
-      showUser :: Int -> Handler PublicUser
+      showUser :: Int -> Handler (User DBUser)
       showUser id = do
         mu <- liftIO (UsersController.show id)
         case mu of
-          Just u -> return u
+          Just u -> return (User u)
           Nothing -> throwError (err404 { errBody = "Not found!" })
 
-      storeUser :: NewUser -> Handler PublicUser
-      storeUser user = do
+      storeUser :: User NewUser -> Handler (User DBUser)
+      storeUser (User user) = do
         mu <- liftIO (UsersController.store user)
         case mu of
-          Just u -> return u
+          Just u -> return (User u)
           Nothing -> throwError (err400 { errBody = "Unable to create new user!" })
 
-      {- updateUser :: Int -> NewUser -> Handler PublicUser
+      {- updateUser :: Int -> User NewUser -> Handler (User DBUser)
       updateUser id user = do
         mu <- liftIO (UsersController.update id user)
         case mu of
