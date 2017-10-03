@@ -6,41 +6,27 @@ module Blog.Server where
 
 import Prelude (Int, Maybe(Just, Nothing), fmap, return)
 import Control.Monad.IO.Class (liftIO)
-import Servant ( Application
-               , Server
-               , Handler
-               , Proxy(Proxy)
-               , Capture
-               , Get
-               , Post
-               , Delete
-               , Put
-               , JSON
-               , ServantErr(errBody)
-               , ReqBody
-               , NoContent(NoContent)
-               , serve
-               , throwError
-               , err404
-               , err400
-               , (:>)
-               , (:<|>)((:<|>))
+import Servant ( Application , Server , Handler , Proxy(Proxy)
+               , Capture , Get , Post , Delete , Put , JSON
+               , ServantErr(errBody) , ReqBody , NoContent(NoContent)
+               , serve , throwError , err404 , err400
+               , (:>) , (:<|>)((:<|>))
                )
 import Blog.API.Models.User (User(User), DBUser, NewUser, UpdateUser)
-import qualified Blog.API.Controllers.UsersController as UsersController (index, show, store, destroy)
+import qualified Blog.API.Controllers.UsersController as UsersController (index, show, store, update, destroy)
 
 type BlogAPI =
        "users" :> Get '[JSON] [User DBUser]
   :<|> "users" :> Capture "id" Int :> Get '[JSON] (User DBUser)
   :<|> "users" :> ReqBody '[JSON] (User NewUser) :> Post '[JSON] (User DBUser)
-  -- :<|> "users" :> Capture "id" Int :> ReqBody '[JSON] (User UpdateUser) :> Put '[JSON] (User DBUser)
+  :<|> "users" :> Capture "id" Int :> ReqBody '[JSON] (User UpdateUser) :> Put '[JSON] (User DBUser)
   :<|> "users" :> Capture "id" Int :> Delete '[JSON] NoContent
 
 blogServer :: Server BlogAPI
 blogServer = indexUsers
   :<|> showUser
   :<|> storeUser
-  -- :<|> updateUser
+  :<|> updateUser
   :<|> deleteUser
     where
       indexUsers :: Handler [User DBUser]
@@ -62,12 +48,12 @@ blogServer = indexUsers
           Just u -> return (User u)
           Nothing -> throwError (err400 { errBody = "Unable to create new user!" })
 
-      {- updateUser :: Int -> User NewUser -> Handler (User DBUser)
-      updateUser id user = do
+      updateUser :: Int -> User UpdateUser -> Handler (User DBUser)
+      updateUser id (User user) = do
         mu <- liftIO (UsersController.update id user)
         case mu of
-          Just u -> return u
-          Nothing -> throwError (err400 { errBody = "Unable to update user!" }) -}
+          Just u -> return (User u)
+          Nothing -> throwError (err400 { errBody = "Unable to update user!" })
 
       deleteUser :: Int -> Handler NoContent
       deleteUser id = do
