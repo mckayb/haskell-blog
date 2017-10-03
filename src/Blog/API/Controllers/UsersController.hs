@@ -48,14 +48,14 @@ update id attrs = do
             case maybeExistingUser of
                 Nothing -> return Nothing
                 Just usr -> do
-                    let query = "update users set name = ?, email = ?, password = ? where id = ? returning id, name, email"
+                    let q = "update users set name = ?, email = ?, password = ? where id = ? returning id, name, email"
                     let bindings = [( fromMaybe (dbName usr) (updateName attrs)
                                     , fromMaybe (dbEmail usr) (updateEmail attrs)
                                     -- FIXME: How do I pull correct password from the existing user
                                     -- , fromMaybe (dbPassword usr) (updatePassword attrs)
                                     , fromMaybe "Blah" (updatePassword attrs)
                                    )]
-                    updatedUser <- (try $ returning conn query bindings) :: IO (Either SomeException [DBUser])
+                    updatedUser <- (try $ returning conn q bindings) :: IO (Either SomeException [DBUser])
                     close conn
                     case updatedUser of
                         Left _ -> return Nothing
