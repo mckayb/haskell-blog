@@ -30,8 +30,15 @@ data UpdateUser =
 instance FromJSON UpdateUser
 instance ToRow UpdateUser
 
+data AuthUser =
+  AuthUser { authId :: Integer, authName :: Text, authEmail :: Text }
+  deriving (Eq, Show, Generic)
+
+instance ToJSON AuthUser
+instance FromRow AuthUser
+
 data DBUser =
-  DBUser { dbId :: Integer, dbName :: Text, dbEmail :: Text }
+  DBUser { dbId :: Integer, dbName :: Text, dbEmail :: Text, dbPassword :: Text }
   deriving (Eq, Show, Generic)
 
 instance ToJSON DBUser
